@@ -1,32 +1,32 @@
 #12.	Определить количество пассажиров на борту в возрастном интервале мода  5 лет и сколько из них выжило
-import pandas as pd
+import csv
+from statistics import mode
 
-# Загрузка данных из файла CSV
-data = pd.read_csv('titanic.csv')
+with open('titanic.csv', 'r') as file:
+    reader = csv.reader(file)
+    next(reader)
 
-# Выборка только необходимых столбцов: Выжил и Возраст
-selected_columns = ['Survived', 'Age']
-filtered_data = data[selected_columns]
+    age_intervals = {}
 
-# Очистка данных от пропущенных значений
-filtered_data = filtered_data.dropna()
+    for row in reader:
+        age = float(row[4])
 
-# Вычисление моды возраста
-mode_age = filtered_data['Age'].mode()[0]
+        age_interval = int(age // 5) * 5
+        print(age, " - ", age_interval)
 
-# Определение возрастного интервала моды ± 5 лет
-lower_limit = mode_age - 5
-upper_limit = mode_age + 5
+        if age_interval in age_intervals:
+            age_intervals[age_interval]['passengers'] += 1
 
-# Фильтрация данных по возрастному интервалу
-age_filtered_data = filtered_data[(filtered_data['Age'] >= lower_limit) & (filtered_data['Age'] <= upper_limit)]
+            if int(row[0]) == 1:
+                age_intervals[age_interval]['survived'] += 1
+        else:
+            age_intervals[age_interval] = {'passengers': 1, 'survived': int(row[0])}
 
-# Вычисление количества пассажиров в возрастном интервале
-passengers_count = len(age_filtered_data)
+age_mode = mode(age_intervals.keys())
 
-# Вычисление количества выживших пассажиров в возрастном интервале
-survived_count = age_filtered_data['Survived'].sum()
+passengers_in_mode_interval = age_intervals[age_mode]['passengers']
+survived_in_mode_interval = age_intervals[age_mode]['survived']
 
-print("Мода: ", mode_age)
-print("Количество пассажиров в возрастном интервале моды ± 5 лет:", passengers_count)
-print("Количество выживших пассажиров в возрастном интервале моды ± 5 лет:", survived_count)
+print("Мода: ", age_mode)
+print("Количество пассажиров в возрастном интервале моды ± 5 лет:", passengers_in_mode_interval)
+print("Количество выживших в данном интервале:", survived_in_mode_interval)
